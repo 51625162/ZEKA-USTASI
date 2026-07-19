@@ -195,12 +195,15 @@ const GAMES = [
 const SHAPE_POOLS = [
   ['🔺','🔵'], ['⭐','🌙','☀️'], ['🍎','🍌'], ['🐱','🐶','🐰'], ['🟢','🟡','🔴']
 ];
-function genMantik(count){
+function genMantik(count, difficulty){
+  const diff = difficulty || 'orta';
+  const STEP_POOL = diff === 'kolay' ? [1,2,3] : diff === 'zor' ? [3,4,5,6,7] : [2,3,4,5];
+  const START_MAX = diff === 'kolay' ? 10 : diff === 'zor' ? 25 : 12;
   const qs = [];
   for(let i=0;i<count;i++){
     if(Math.random() < 0.55){
-      const start = randInt(1,12);
-      const step = pick([2,3,4,5]);
+      const start = randInt(1,START_MAX);
+      const step = pick(STEP_POOL);
       const terms = [start, start+step, start+2*step, start+3*step];
       const correct = start + 4*step;
       const distractors = new Set();
@@ -226,7 +229,8 @@ function genMantik(count){
         ]
       });
     } else {
-      const unit = pick(SHAPE_POOLS);
+      const pool = diff === 'kolay' ? SHAPE_POOLS.filter(p => p.length === 2) : SHAPE_POOLS;
+      const unit = pick(pool.length ? pool : SHAPE_POOLS);
       const seq = [];
       for(let k=0;k<5;k++) seq.push(unit[k % unit.length]);
       const shown = seq.slice(0,4);
@@ -254,23 +258,31 @@ function genMantik(count){
 /* ---- Parça Birleştir (matris) ---- */
 const SQUARES = ['🟥','🟧','🟨','🟩','🟦','🟪','⬛','⬜'];
 const CIRCLES = ['🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪'];
-function genMatris(count){
+function genMatris(count, difficulty){
+  const diff = difficulty || 'orta';
   const qs = [];
   for(let i=0;i<count;i++){
-    const palette = Math.random()<0.5 ? SQUARES : CIRCLES;
+    const basePalette = Math.random()<0.5 ? SQUARES : CIRCLES;
+    const palette = diff === 'kolay' ? basePalette.slice(0,4) : basePalette;
     const c0 = rand(palette.length);
     const cellAt = (r,c) => palette[(c0 + r + c) % palette.length];
     const grid = [cellAt(0,0), cellAt(0,1), cellAt(1,0)];
     const correct = cellAt(1,1);
-    const others = palette.filter(p => p !== correct);
+    let others = palette.filter(p => p !== correct);
+    if(diff === 'zor'){
+      // zor: en yakın (görsel olarak birbirine benzeyen) renkleri seçenek yap
+      const correctIdx = basePalette.indexOf(correct);
+      others = others.sort((a,b) => Math.abs(basePalette.indexOf(a)-correctIdx) - Math.abs(basePalette.indexOf(b)-correctIdx));
+      others = others.slice(0, Math.min(5, others.length));
+    }
     const distractors = sample(others, 3);
-    const options = shuffle([correct, ...distractors]);
     const html = `<div class="matrix-grid">
         <div class="matrix-cell">${grid[0]}</div>
         <div class="matrix-cell">${grid[1]}</div>
         <div class="matrix-cell">${grid[2]}</div>
         <div class="matrix-cell matrix-q">?</div>
       </div><div class="prompt-sub">Kalıbı tamamlayan parça hangisi?</div>`;
+    const options = shuffle([correct, ...distractors]);
     qs.push({
       prompt: html, options, correct: options.indexOf(correct), answerText: correct,
       solutionSteps: [
@@ -301,16 +313,21 @@ function buildCipherKey(){
   return key;
 }
 function encode(word, key){ return word.split('').map(ch => key[ch]).join(' '); }
-function genSifre(count){
+function genSifre(count, difficulty){
+  const diff = difficulty || 'orta';
+  const wordPool = diff === 'kolay' ? WORD_BANK.filter(w => w.length <= 3)
+                  : diff === 'zor' ? WORD_BANK.filter(w => w.length >= 6)
+                  : WORD_BANK.filter(w => w.length >= 4 && w.length <= 6);
+  const bank = wordPool.length >= 4 ? wordPool : WORD_BANK;
   cipherKey = buildCipherKey();
   const qs = [];
   const used = new Set();
   for(let i=0;i<count;i++){
     let word;
     let tries = 0;
-    do { word = pick(WORD_BANK); tries++; } while(used.has(word) && used.size < WORD_BANK.length && tries < 20);
+    do { word = pick(bank); tries++; } while(used.has(word) && used.size < bank.length && tries < 20);
     used.add(word);
-    const others = WORD_BANK.filter(w => w !== word);
+    const others = bank.filter(w => w !== word);
     const distractors = sample(others, 3);
     const options = shuffle([word, ...distractors]);
     const legend = Object.entries(cipherKey).map(([l,s]) => `${l}=${s}`).join('  ');
@@ -335,11 +352,13 @@ function genSifre(count){
 
 /* ---- Uzamsal Dizi ---- */
 const ARROWS = ['↑','↗','→','↘','↓','↙','←','↖'];
-function genYon(count){
+function genYon(count, difficulty){
+  const diff = difficulty || 'orta';
+  const STEP_POOL = diff === 'kolay' ? [1] : diff === 'zor' ? [2,3,4] : [1,2,3];
   const qs = [];
   for(let i=0;i<count;i++){
     const start = rand(8);
-    const step = pick([1,2,3]);
+    const step = pick(STEP_POOL);
     const seq = [0,1,2,3].map(k => ARROWS[(start + k*step) % 8]);
     const correct = ARROWS[(start + 4*step) % 8];
     const others = ARROWS.filter(a => a !== correct);
@@ -403,10 +422,48 @@ const STORIES = [
   ['Bulut oluşur','Bulut büyür','Yağmur damlaları düşer','Gökkuşağı çıkar'],
   ['Tren istasyona gelir','Yolcular biner','Tren hareket eder','Yeni durakta iner']
 ];
-function genSiralama(count){
+const STORIES_EASY = [
+  ['Musluğu aç','Ellerini yıka','Musluğu kapat'],
+  ['Kitabı aç','Sayfayı oku','Kitabı kapat'],
+  ['Topu at','Top havada uçar','Top yere düşer'],
+  ['Mumu yak','Mum yanar','Mum söner'],
+  ['Kapıyı çal','Kapı açılır','İçeri girilir'],
+  ['Elmayı yıka','Elmayı ısır','Elmayı ye'],
+  ['Işığı aç','Oda aydınlanır','Kitap okunur'],
+  ['Boyayı al','Resmi boya','Boyayı kapat'],
+  ['Ayakkabıyı giy','Bağcığı bağla','Dışarı çık'],
+  ['Telefonu aç','Numarayı çevir','Konuşulur'],
+  ['Tohumu ek','Su ver','Filiz çıkar'],
+  ['Yumurtayı kır','Tavaya dök','Yumurta pişer'],
+  ['Bardağı doldur','Suyu iç','Bardağı bırak'],
+  ['Şemsiyeyi aç','Yağmurdan korunulur','Şemsiye kapatılır']
+];
+const STORIES_HARD = [
+  ['Un elenir','Yumurta kırılır','Karışım yoğrulur','Fırına konur','Ekmek pişer'],
+  ['Tohum saklanır','Toprağa ekilir','Sulanır','Filizlenir','Meyve verir'],
+  ['Kumaş kesilir','Dikilir','Düğmeler takılır','Ütülenir','Giyilir'],
+  ['Fikir bulunur','Taslak çizilir','Renklendirilir','Çerçevelenir','Duvara asılır'],
+  ['Yumurtadan tırtıl çıkar','Yapraklarla beslenir','Koza örer','İçinde değişir','Kelebek olup uçar'],
+  ['Buğday hasat edilir','Öğütülür','Un elde edilir','Hamur yapılır','Ekmek pişirilir'],
+  ['Ağaç kesilir','Odun taşınır','Şekil verilir','Cilalanır','Mobilya olur'],
+  ['Bulut oluşur','Yoğunlaşır','Yağmur yağar','Nehre akar','Denize ulaşır'],
+  ['Fidan dikilir','Sulanır','Yıllarca büyür','Dallanır','Gölge veren ağaç olur'],
+  ['Pamuk toplanır','Temizlenir','Eğrilir','İplik olur','Kumaş dokunur'],
+  ['Hikaye tasarlanır','Karakterler yazılır','Bölümler yazılır','Resimlenir','Kitap basılır'],
+  ['Süt sağılır','Mayalanır','Bekletilir','Süzülür','Peynir olur'],
+  ['Taş ocaktan çıkarılır','Kesilir','Şekillendirilir','Cilalanır','Heykel olur'],
+  ['Deniz kabuğu bulunur','Yıkanır','Delinir','İplik geçirilir','Kolye olur']
+];
+function pickStoryBank(difficulty){
+  if(difficulty === 'kolay') return STORIES_EASY;
+  if(difficulty === 'zor') return STORIES_HARD;
+  return STORIES;
+}
+function genSiralama(count, difficulty){
+  const bank = pickStoryBank(difficulty);
   const result = [];
   while(result.length < count){
-    const batch = shuffle(STORIES);
+    const batch = shuffle(bank);
     for(const s of batch){
       if(result.length >= count) break;
       result.push(s);
@@ -417,10 +474,14 @@ function genSiralama(count){
 
 /* ---- Tek Farklıyı Bul (dikkat) ---- */
 const ATTN_SETS = [ SQUARES, CIRCLES, ['🍎','🍏'], ['🐱','🐈'], ['⭐','🌟'], ['🍇','🍒'], ['🐰','🐇'], ['🔺','🔻'], ['⬆️','⬇️'] ];
-function genDikkat(count){
+function genDikkat(count, difficulty){
+  const diff = difficulty || 'orta';
+  const SIZE_BASE = diff === 'kolay' ? 3 : diff === 'zor' ? 5 : 4;
+  const SIZE_MAX = diff === 'kolay' ? 4 : diff === 'zor' ? 7 : 6;
+  const TIME_MULT = diff === 'kolay' ? 1.3 : diff === 'zor' ? 0.75 : 1;
   const qs = [];
   for(let i=0;i<count;i++){
-    const size = Math.min(4 + Math.floor(i/6), 6);
+    const size = Math.min(SIZE_BASE + Math.floor(i/6), SIZE_MAX);
     const pool = pick(ATTN_SETS);
     const base = pool[0];
     let odd = pool.length > 1 ? pool[randInt(1,pool.length-1)] : pool[0];
@@ -428,7 +489,7 @@ function genDikkat(count){
     const oddIndex = rand(total);
     const row = Math.floor(oddIndex/size), col = oddIndex % size;
     qs.push({
-      size, base, odd, oddIndex,
+      size, base, odd, oddIndex, timeMult: TIME_MULT,
       solutionSteps: [
         `Bu turda hücrelerin çoğu ${nameOf(base)} idi.`,
         `Farklı olan hücre ${nameOf(odd)} idi.`,
@@ -776,36 +837,46 @@ function renderDashboard(){
       <p>${g.desc}</p>
       <div class="stars">${'★'.repeat(g.stars)}${'☆'.repeat(3-g.stars)}</div>
       <div class="best">${g.count ? g.count + ' soru havuzu' : ''}${best ? ' • En iyi: ' + best : ''}</div>
-      <button class="start-btn">Göreve Başla →</button>
+      <div class="diff-btns">
+        <button class="diff-btn diff-kolay" data-diff="kolay">🟢 Kolay</button>
+        <button class="diff-btn diff-orta" data-diff="orta">🟡 Orta</button>
+        <button class="diff-btn diff-zor" data-diff="zor">🔴 Zor</button>
+      </div>
     `;
-    card.querySelector('.start-btn').addEventListener('click', () => startGame(g.id));
+    card.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => startGame(g.id, btn.dataset.diff));
+    });
     grid.appendChild(card);
   });
 }
 
 document.getElementById('btn-back').addEventListener('click', () => { cancelSpeech(); showScreen('screen-dashboard'); renderDashboard(); });
 document.getElementById('btn-home').addEventListener('click', () => { cancelSpeech(); showScreen('screen-dashboard'); renderDashboard(); });
-document.getElementById('btn-replay').addEventListener('click', () => startGame(runtime.gameId));
+document.getElementById('btn-replay').addEventListener('click', () => startGame(runtime.gameId, runtime.difficulty));
 
 /* ================= GAME RUNTIME ================= */
-let runtime = { gameId:null, def:null, qIndex:0, correct:0, pointsEarned:0, questions:[] };
+let runtime = { gameId:null, def:null, qIndex:0, correct:0, pointsEarned:0, questions:[], difficulty:'orta' };
 
-function startGame(id){
+const DIFF_LABEL = {kolay:'🟢 Kolay', orta:'🟡 Orta', zor:'🔴 Zor'};
+
+function startGame(id, difficulty){
   const def = GAMES.find(g => g.id === id);
-  runtime = { gameId:id, def, qIndex:0, correct:0, pointsEarned:0, questions:[] };
+  const diff = difficulty || 'orta';
+  runtime = { gameId:id, def, qIndex:0, correct:0, pointsEarned:0, questions:[], difficulty:diff };
   document.getElementById('g-title').textContent = def.icon + ' ' + def.title;
   showScreen('screen-game');
 
   if(def.type === 'mcq'){
-    runtime.questions = def.gen(def.count);
+    runtime.questions = def.gen(def.count, diff);
     renderMCQStep();
   } else if(def.type === 'memory'){
-    startMemory(def.count);
+    const pairCount = diff === 'kolay' ? Math.max(4, def.count - 3) : diff === 'zor' ? def.count + 4 : def.count;
+    startMemory(pairCount);
   } else if(def.type === 'sequence'){
-    runtime.questions = genSiralama(def.count);
+    runtime.questions = genSiralama(def.count, diff);
     renderSequenceStep();
   } else if(def.type === 'attention'){
-    runtime.questions = genDikkat(def.count);
+    runtime.questions = genDikkat(def.count, diff);
     renderAttentionStep();
   }
 }
@@ -813,7 +884,7 @@ function startGame(id){
 /* ---- MCQ runner (mantik, matris, sifre, yon) ---- */
 function renderMCQStep(){
   const { qIndex, questions } = runtime;
-  document.getElementById('g-meta').textContent = `Soru ${qIndex+1}/${questions.length}  •  ⭐ ${runtime.pointsEarned}`;
+  document.getElementById('g-meta').textContent = `${DIFF_LABEL[runtime.difficulty]}  •  Soru ${qIndex+1}/${questions.length}  •  ⭐ ${runtime.pointsEarned}`;
   const q = questions[qIndex];
   const stage = document.getElementById('game-stage');
   stage.innerHTML = `
@@ -879,7 +950,7 @@ function startMemory(pairCount){
   const chosen = sample(emojiPool, pairCount);
   const deck = shuffle([...chosen, ...chosen]).map((emoji, idx) => ({ id: idx, emoji, flipped:false, matched:false }));
   memState = { deck, first:null, second:null, moves:0, matchedCount:0, lock:false };
-  document.getElementById('g-meta').textContent = `${pairCount} çift`;
+  document.getElementById('g-meta').textContent = `${DIFF_LABEL[runtime.difficulty]}  •  ${pairCount} çift`;
   renderMemory();
 }
 function renderMemory(){
@@ -944,7 +1015,7 @@ function renderSequenceStep(){
   const story = runtime.questions[runtime.qIndex];
   const shuffled = shuffle(story.steps.map((s,i) => ({ text:s, correctPos:i })));
   seqState = { story, pool: shuffled, answer: [] };
-  document.getElementById('g-meta').textContent = `Hikâye ${runtime.qIndex+1}/${runtime.questions.length}  •  ⭐ ${runtime.pointsEarned}`;
+  document.getElementById('g-meta').textContent = `${DIFF_LABEL[runtime.difficulty]}  •  Hikâye ${runtime.qIndex+1}/${runtime.questions.length}  •  ⭐ ${runtime.pointsEarned}`;
   renderSequenceUI();
 }
 function renderSequenceUI(){
@@ -1017,7 +1088,7 @@ let attnState = null;
 function renderAttentionStep(){
   const q = runtime.questions[runtime.qIndex];
   attnState = { q, timeLeft:100, timerId:null, answered:false };
-  document.getElementById('g-meta').textContent = `Tur ${runtime.qIndex+1}/${runtime.questions.length}  •  ⭐ ${runtime.pointsEarned}`;
+  document.getElementById('g-meta').textContent = `${DIFF_LABEL[runtime.difficulty]}  •  Tur ${runtime.qIndex+1}/${runtime.questions.length}  •  ⭐ ${runtime.pointsEarned}`;
   const stage = document.getElementById('game-stage');
   stage.innerHTML = `
     <div class="prompt-box" style="font-size:1rem;">Farklı olanı bul ve tıkla!</div>
@@ -1036,7 +1107,7 @@ function renderAttentionStep(){
     grid.appendChild(cell);
   }
   attnState.timerId = setInterval(() => {
-    attnState.timeLeft -= 1.6;
+    attnState.timeLeft -= 1.6 / (attnState.q.timeMult || 1);
     const fill = document.getElementById('attn-fill');
     if(fill) fill.style.width = Math.max(0, attnState.timeLeft) + '%';
     if(attnState.timeLeft <= 0){

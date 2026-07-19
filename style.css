@@ -143,6 +143,15 @@ button:focus-visible, input:focus-visible, div[tabindex]:focus-visible{outline:3
   font-weight:800;font-size:0.9rem;font-family:var(--font-display);letter-spacing:0.5px;
 }
 .start-btn:hover{background:#3a3a5c;}
+.diff-btns{margin-top:auto;display:flex;gap:6px;}
+.diff-btn{
+  flex:1;padding:9px 4px;border-radius:9px;font-weight:800;font-size:0.78rem;
+  font-family:var(--font-display);color:#fff;transition:transform 0.12s;
+}
+.diff-btn:hover{transform:translateY(-2px);}
+.diff-kolay{background:#3aa65f;}
+.diff-orta{background:#d99f1a;}
+.diff-zor{background:#d9483a;}
 
 /* ---------- GAME SCREEN ---------- */
 #screen-game{align-items:stretch;}
