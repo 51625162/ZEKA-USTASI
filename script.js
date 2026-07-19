@@ -81,12 +81,12 @@ function saveProgress(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
 }
 
-const LEVEL_STEP = 40; // her 40 puanda 1 seviye
+const LEVEL_STEP = 500; // her 500 puanda 1 seviye (1000 soruluk büyük havuz için dengelendi)
 const RANK_NAMES = [
   {min:0, name:'Çaylak Dedektif'},
-  {min:150, name:'Kaşif Dedektif'},
-  {min:400, name:'Usta Dedektif'},
-  {min:800, name:'Baş Dedektif'}
+  {min:2500, name:'Kaşif Dedektif'},
+  {min:6000, name:'Usta Dedektif'},
+  {min:12000, name:'Baş Dedektif'}
 ];
 function levelForPoints(points){ return Math.floor(points / LEVEL_STEP) + 1; }
 function getLevel(points){
@@ -112,40 +112,61 @@ const EMOJI_NAMES = {
 };
 function nameOf(e){ return EMOJI_NAMES[e] || e; }
 
-/* ================= DRAGON COLLECTION ================= */
-const DRAGONS = [
-  {id:'lumi',      name:'Lumi',        cat:'mantik',   rarity:'bronze',  emoji:'🐲', ability:'Sayı ve şekil dizilerindeki kalıpları anında görür.', trait:'Meraklı, sabırlı ve her zaman ilk yardıma koşan bir ejder.'},
-  {id:'zeko',      name:'Zeko',        cat:'mantik',   rarity:'silver',  emoji:'🐉', ability:'Karmaşık dizilerde bir sonraki adımı tahmin eder.', trait:'Hızlı düşünür, bulmacalardan asla kaçmaz.'},
-  {id:'akilhan',   name:'Akılhan',     cat:'mantik',   rarity:'gold',    emoji:'🐲', ability:'En zor mantık sorularını bile saniyeler içinde çözer.', trait:'Sakin ve güvenilir, takımın akıl hocası.'},
-  {id:'bilgeata',  name:'Bilgeata',    cat:'mantik',   rarity:'diamond', emoji:'🐉', ability:'Tüm mantık dünyasının efsanevi ustası.', trait:'Bilge, sözleri az ama her sözü değerli.'},
-
-  {id:'gizem',     name:'Gizem',       cat:'sifre',    rarity:'bronze',  emoji:'🦎', ability:'Basit şifreleri gözünü kırpmadan çözer.', trait:'Gizemli ve sessiz, sürprizleri sever.'},
-  {id:'kodra',     name:'Kodra',       cat:'sifre',    rarity:'silver',  emoji:'🐍', ability:'Sembol ve harf kalıplarını hızla eşleştirir.', trait:'Meraklı bir kâşif, her kodun peşine düşer.'},
-  {id:'sirran',    name:'Sirran',      cat:'sifre',    rarity:'gold',    emoji:'🐲', ability:'En karışık şifreleri bile tek bakışta çözer.', trait:'Kurnaz ama dürüst, dostlarına sadık.'},
-  {id:'mechul',    name:'Meçhul',      cat:'sifre',    rarity:'diamond', emoji:'🐉', ability:'Hiçbir kod ona karşı gizli kalamaz.', trait:'Efsanevi şifre ustası, izini kimse süremez.'},
-
-  {id:'anika',     name:'Anıka',       cat:'hafiza',   rarity:'bronze',  emoji:'🦕', ability:'Gördüğü kartları kolayca hatırlar.', trait:'Neşeli ve unutkan dostlarına yardımcı olmayı sever.'},
-  {id:'hatirla',   name:'Hatırla',     cat:'hafiza',   rarity:'silver',  emoji:'🦖', ability:'Uzun kart dizilerini bile aklında tutar.', trait:'Sabırlı, tekrar etmekten yorulmaz.'},
-  {id:'zihara',    name:'Zihara',      cat:'hafiza',   rarity:'gold',    emoji:'🐉', ability:'Bir kez gördüğünü asla unutmaz.', trait:'Keskin zekalı, hafıza şampiyonu.'},
-  {id:'bellekhan', name:'Bellekhan',   cat:'hafiza',   rarity:'diamond', emoji:'🐲', ability:'Tüm hafıza oyunlarının efsanevi rekortmeni.', trait:'Görkemli ve unutulmaz, tıpkı hafızası gibi.'},
-
-  {id:'pusula',    name:'Pusula',      cat:'yon',      rarity:'bronze',  emoji:'🐦‍🔥', ability:'Yönleri ve dönüşleri kolayca takip eder.', trait:'Maceracı, hep yeni rotalar keşfeder.'},
-  {id:'yonata',    name:'Yönata',      cat:'yon',      rarity:'silver',  emoji:'🐉', ability:'Karmaşık dönüş kalıplarını çözer.', trait:'Cesur ve yönünü hiç şaşırmaz.'},
-  {id:'rotam',     name:'Rotam',       cat:'yon',      rarity:'gold',    emoji:'🐲', ability:'Uzaydaki her dönüşü önceden hisseder.', trait:'Lider ruhlu, takımına yol gösterir.'},
-  {id:'gokyon',    name:'Gökyön',      cat:'yon',      rarity:'diamond', emoji:'🐉', ability:'Gökyüzünün en usta yön ustası.', trait:'Efsanevi, rüzgarla birlikte süzülür.'},
-
-  {id:'siravi',    name:'Sıravi',      cat:'siralama', rarity:'bronze',  emoji:'🦎', ability:'Olayların doğru sırasını kolayca bulur.', trait:'Düzenli ve titiz, her şeyi sırayla sever.'},
-  {id:'zamano',    name:'Zamano',      cat:'siralama', rarity:'silver',  emoji:'🐍', ability:'Zaman içindeki olayları akıllıca sıralar.', trait:'Sakin, acele etmez ama hep doğru zamanlar.'},
-  {id:'ardil',     name:'Ardıl',       cat:'siralama', rarity:'gold',    emoji:'🐉', ability:'En karmaşık hikâyeleri bile doğru sıraya dizer.', trait:'Hikâye anlatmayı çok sever.'},
-  {id:'kronos',    name:'Kronoş',      cat:'siralama', rarity:'diamond', emoji:'🐲', ability:'Zamanın efsanevi bekçisi, hiçbir sıra ona karışmaz.', trait:'Görkemli ve bilge, çağların tanığı.'},
-
-  {id:'gozcuk',    name:'Gözcük',      cat:'dikkat',   rarity:'bronze',  emoji:'🦖', ability:'Farklı olanı hemen fark eder.', trait:'Meraklı gözlerle her şeyi inceler.'},
-  {id:'simsek',    name:'Şimşek',      cat:'dikkat',   rarity:'silver',  emoji:'🐉', ability:'Göz kırpmadan en küçük farkı yakalar.', trait:'Hızlı ve enerjik, asla durmaz.'},
-  {id:'farkina',   name:'Farkına',     cat:'dikkat',   rarity:'gold',    emoji:'🐲', ability:'Kamuflajı bozan keskin bir göze sahip.', trait:'Dikkatli ve sakin, hiçbir şeyi kaçırmaz.'},
-  {id:'argus',     name:'Argus',       cat:'dikkat',   rarity:'diamond', emoji:'🐉', ability:'Bin gözle bakar, hiçbir detay ona saklı kalmaz.', trait:'Efsanevi gözcü, koleksiyonun en keskin bakışlısı.'}
+/* ================= DRAGON COLLECTION (80 ejder) ================= */
+const DRAGON_TIERS = ['Yumurta','Çaylak','Toprak','Bronz','Gümüş','Altın','Yakut','Zümrüt','Elmas','Efsane'];
+const DRAGON_RARITY_BUCKET = ['bronze','bronze','bronze','bronze','silver','silver','silver','gold','gold','diamond'];
+const DRAGON_INTENSITY = ['küçük','basit','kolay','orta seviye','biraz zor','zorlu','karmaşık','çok zor','nadir görülen','evrenin en zor'];
+const DRAGON_EMOJI_CYCLE = ['🐲','🐉','🦎','🐍','🦕','🦖'];
+const DRAGON_TRAITS = [
+  'Meraklı ve sabırlı, her zaman ilk yardıma koşar.',
+  'Hızlı düşünür, bulmacalardan asla kaçmaz.',
+  'Sakin ve güvenilir, takımın akıl hocasıdır.',
+  'Bilge, sözleri az ama her sözü değerlidir.',
+  'Gizemli ve sessiz, sürprizleri sever.',
+  'Cesur bir kâşif, yeni zorluklardan çekinmez.',
+  'Neşeli ve enerjik, hiç durmadan çalışır.',
+  'Titiz ve düzenli, her şeyi sırayla sever.',
+  'Keskin gözlü, en küçük detayı bile kaçırmaz.',
+  'Görkemli ve unutulmaz, koleksiyonun gururu.'
 ];
+const DRAGON_CATEGORIES = [
+  {id:'mantik',   label:'🧩 Mantık',   verb:'bulmacaları çözer',
+    names:['Lumi','Zeko','Aklan','Mantıka','Sezgin','Vargo','Bulgun','Akılhan','Düşüno','Bilgeata']},
+  {id:'sifre',    label:'🔐 Şifre',    verb:'şifreleri çözer',
+    names:['Gizem','Kodra','Sirran','Kripto','Şifro','Gizli','Kodex','Sırdan','Anahtar','Meçhul']},
+  {id:'hafiza',   label:'🃏 Hafıza',   verb:'bilgileri hatırlar',
+    names:['Anıka','Hatırla','Kayıthan','Zihniz','Belleka','Anımsa','Zihara','Hafızor','Anısal','Bellekhan']},
+  {id:'yon',      label:'🧭 Uzamsal',  verb:'yönleri ve dönüşleri takip eder',
+    names:['Pusula','Yönata','Rotam','Dönergen','Yolcuk','Rotana','Göksel','Uzaya','Gökyön','Uzaman']},
+  {id:'siralama', label:'📖 Sıralama', verb:'olayları doğru sıraya dizer',
+    names:['Sıravi','Zamano','Öncesu','Ardılca','Sırahan','Zamanay','Ardıl','Kronika','Zamansal','Kronoş']},
+  {id:'dikkat',   label:'🔍 Dikkat',   verb:'farkı hemen yakalar',
+    names:['Gözcük','Şimşek','Bakışan','Seyrek','Gözetçi','Farkanlı','Işınbak','Farkına','Argonis','Argus']},
+  {id:'sozel',    label:'🗣️ Sözel',    verb:'kelimeleri ve anlamları keşfeder',
+    names:['Kelam','Sözcük','Dilhan','Konuşa','Anlatan','Kelamce','Dilsevi','Sözgen','Konuşkan','Anlatı']},
+  {id:'sayisal',  label:'🔢 Sayısal',  verb:'sayılarla hızla işlem yapar',
+    names:['Sayıka','Rakam','Hesapçı','Toplan','Çarpan','Bölünç','Sayaç','Matema','Sayısal','Sayıhan']}
+];
+const CAT_LABEL = {};
+DRAGON_CATEGORIES.forEach(c => { CAT_LABEL[c.id] = c.label; });
+
+const DRAGONS = [];
+DRAGON_CATEGORIES.forEach((cat, catIdx) => {
+  cat.names.forEach((name, i) => {
+    const id = (name === 'Lumi') ? 'lumi' : (cat.id + '-' + (i+1));
+    DRAGONS.push({
+      id,
+      name,
+      cat: cat.id,
+      tier: DRAGON_TIERS[i],
+      rarity: DRAGON_RARITY_BUCKET[i],
+      emoji: DRAGON_EMOJI_CYCLE[i % DRAGON_EMOJI_CYCLE.length],
+      ability: `${DRAGON_INTENSITY[i].charAt(0).toUpperCase() + DRAGON_INTENSITY[i].slice(1)} ${cat.verb}.`,
+      trait: DRAGON_TRAITS[(i + catIdx) % DRAGON_TRAITS.length]
+    });
+  });
+});
 const RARITY_LABEL = {bronze:'Bronz', silver:'Gümüş', gold:'Altın', diamond:'Elmas'};
-const CAT_LABEL = {mantik:'🧩 Mantık', sifre:'🔐 Şifre', hafiza:'🃏 Hafıza', yon:'🧭 Uzamsal', siralama:'📖 Sıralama', dikkat:'🔍 Dikkat'};
 
 function nextLockedDragon(){
   return DRAGONS.find(d => !state.dragons.includes(d.id));
@@ -161,13 +182,13 @@ function unlockDragonsForLevelUp(levelsGained){
 
 /* ================= GAME DEFINITIONS ================= */
 const GAMES = [
-  {id:'mantik', title:'Mantık Yürütme', desc:'Sayı ve şekil dizilerindeki sırrı çöz', icon:'🧩', stars:2, type:'mcq', count:35, gen: genMantik},
-  {id:'matris', title:'Parça Birleştir', desc:'Kalıbı incele, eksik parçayı bul', icon:'🖼️', stars:3, type:'mcq', count:35, gen: genMatris},
-  {id:'sifre', title:'Şifreyi Çöz', desc:'Dedektif koduyla gizli kelimeyi bul', icon:'🔐', stars:2, type:'mcq', count:35, gen: genSifre},
+  {id:'mantik', title:'Mantık Yürütme', desc:'Sayı ve şekil dizilerindeki sırrı çöz', icon:'🧩', stars:2, type:'mcq', count:200, gen: genMantik},
+  {id:'matris', title:'Parça Birleştir', desc:'Kalıbı incele, eksik parçayı bul', icon:'🖼️', stars:3, type:'mcq', count:200, gen: genMatris},
+  {id:'sifre', title:'Şifreyi Çöz', desc:'Dedektif koduyla gizli kelimeyi bul', icon:'🔐', stars:2, type:'mcq', count:200, gen: genSifre},
   {id:'hafiza', title:'Hafıza Kartları', desc:'Eşleri bul, hafızanı test et', icon:'🃏', stars:2, type:'memory', count:8},
-  {id:'yon', title:'Uzamsal Dizi', desc:'Dönen okların bir sonrakini tahmin et', icon:'🧭', stars:3, type:'mcq', count:35, gen: genYon},
-  {id:'siralama', title:'Olayları Sırala', desc:'Hikâyeyi doğru sıraya diz', icon:'📖', stars:2, type:'sequence', count:25},
-  {id:'dikkat', title:'Tek Farklıyı Bul', desc:'Kamuflajı boz, farklı olanı yakala', icon:'🔍', stars:1, type:'attention', count:40}
+  {id:'yon', title:'Uzamsal Dizi', desc:'Dönen okların bir sonrakini tahmin et', icon:'🧭', stars:3, type:'mcq', count:200, gen: genYon},
+  {id:'siralama', title:'Olayları Sırala', desc:'Hikâyeyi doğru sıraya diz', icon:'📖', stars:2, type:'sequence', count:100},
+  {id:'dikkat', title:'Tek Farklıyı Bul', desc:'Kamuflajı boz, farklı olanı yakala', icon:'🔍', stars:1, type:'attention', count:100}
 ];
 
 /* ---- Mantık Yürütme ---- */
@@ -265,7 +286,9 @@ function genMatris(count){
 
 /* ---- Şifreyi Çöz ---- */
 const WORD_BANK = ['KEDİ','KUŞ','TOP','ARI','BAL','ELMA','AY','EV','AT','YOL','KUM','DAL','SAP','GÜL','SU','KOL',
-  'KAPI','MASA','KALEM','SİLGİ','DEFTER','OKUL','BALON','GEMİ','UÇAK','TREN','ORMAN','DENİZ','GÜNEŞ','YILDIZ','BULUT','YAĞMUR','KAR','RÜZGAR'];
+  'KAPI','MASA','KALEM','SİLGİ','DEFTER','OKUL','BALON','GEMİ','UÇAK','TREN','ORMAN','DENİZ','GÜNEŞ','YILDIZ','BULUT','YAĞMUR','KAR','RÜZGAR',
+  'ELDİVEN','ŞAPKA','ÇANTA','KİTAP','SANDALYE','PENCERE','BAHÇE','ÇİÇEK','YAPRAK','KÖPEK','TAVŞAN','KAPLUMBAĞA','BALIK','KELEBEK','ARABA','BİSİKLET',
+  'SAAT','AYNA','LAMBA','KUTU','TABAK','KAŞIK','ÇATAL','BARDAK','ELBİSE','ÇORAP','AYAKKABI','MONT','ŞEMSİYE','ANAHTAR'];
 const SYMBOL_POOL = ['★','●','▲','■','♦','♥','☀','☂','✿','❀','☘','⚡','☾','✈','⌘','§','¤','♣','♠','☎','☺','✎','☯','♪','⌂','◆','▶','✚','☁','✦','☕','✂'];
 let cipherKey = null;
 function buildCipherKey(){
@@ -367,11 +390,29 @@ const STORIES = [
   ['Kuş dal toplar','Yuvayı örer','Yumurta bırakır','Yavrular yumurtadan çıkar'],
   ['Takımlar sahaya çıkar','Hakem düdük çalar','Oyuncular topa vurur','Gol olunca herkes sevinir'],
   ['Okul biter','Bavul hazırlanır','Tatile gidilir','Denizde yüzülür'],
-  ['Fikir bulunur','Hikaye yazılır','Resimler eklenir','Kitap tamamlanır']
+  ['Fikir bulunur','Hikaye yazılır','Resimler eklenir','Kitap tamamlanır'],
+  ['Tarla sürülür','Tohum ekilir','Buğday büyür','Ekin biçilir'],
+  ['Yumurta kırılır','Civciv çıkar','Civciv büyür','Tavuk olur'],
+  ['Kar yağar','Kayak takımı giyilir','Tepeden kayılır','Sıcak çikolata içilir'],
+  ['Kum toplanır','Kale şekli yapılır','Kale süslenir','Dalga gelip kaleyi yıkar'],
+  ['Ampul patlar','Yenisi alınır','Ampul takılır','Işık yanar'],
+  ['Şarkı seçilir','Enstrüman alınır','Şarkı çalınır','Alkışlanır'],
+  ['Kalem kırılır','Kalemtıraş bulunur','Kalem açılır','Yazmaya devam edilir'],
+  ['Misafir gelir','Kapı açılır','Çay ikram edilir','Sohbet edilir'],
+  ['Yumurta pişirilir','Tuz eklenir','Tabağa konur','Kahvaltıda yenir'],
+  ['Bulut oluşur','Bulut büyür','Yağmur damlaları düşer','Gökkuşağı çıkar'],
+  ['Tren istasyona gelir','Yolcular biner','Tren hareket eder','Yeni durakta iner']
 ];
 function genSiralama(count){
-  const chosen = sample(STORIES, Math.min(count, STORIES.length));
-  return chosen.map(steps => ({ steps }));
+  const result = [];
+  while(result.length < count){
+    const batch = shuffle(STORIES);
+    for(const s of batch){
+      if(result.length >= count) break;
+      result.push(s);
+    }
+  }
+  return result.map(steps => ({ steps }));
 }
 
 /* ---- Tek Farklıyı Bul (dikkat) ---- */
@@ -468,25 +509,65 @@ document.getElementById('voice-modal').addEventListener('click', (e) => {
 });
 
 /* ================= VIDEO ANLATIM MODAL ================= */
+// Doğrulanmış tekil videolar (gerçek YouTube ID'leri)
 const VIDEO_TOPICS = [
-  {emoji:'🧠', title:'Zeka Soruları — Görsel, Matematik, Mantık', desc:'Genel zeka becerilerini test eden eğlenceli sorular', ytId:'-wbRZyfoBi8'},
-  {emoji:'🧩', title:'Mantık Soruları — İlkokul Seviyesi', desc:'Kısa ve kolay mantık sorularıyla pratik yap', ytId:'bh4adUyKmVM'}
+  {type:'embed', emoji:'🏛️', title:'BİLSEM Genel Zihinsel Yetenek Tanıtımı (MEB, 2024)', desc:'Milli Eğitim Bakanlığı\'nın resmi tanıtım videosu', ytId:'BN48ZYQZzd8'},
+  {type:'embed', emoji:'📋', title:'BİLSEM Sınavı 2025-2026 Tanıtım Videosu', desc:'Güncel sınav süreci hakkında resmi bilgilendirme', ytId:'_TGjm3WSC0Y'},
+  {type:'embed', emoji:'📄', title:'Genel Zihinsel Yetenek Alanı Seçim Süreci (MEB)', desc:'Milli Eğitim Bakanlığı resmi tanıtımı', ytId:'G93Czk0R614'},
+  {type:'embed', emoji:'✍️', title:'Tablet Sınavı — Örnek Soru Çözümü', desc:'Gerçek sınav sorularının adım adım çözümü', ytId:'BfrKHh90SO0'},
+  {type:'embed', emoji:'🗣️', title:'Mülakat — Örnek Sorular', desc:'Bireysel değerlendirme aşamasında çıkabilecek sorular', ytId:'xNktScwP9-M'},
+  {type:'embed', emoji:'🎤', title:'Mülakat | TUZÖ | Genel Yetenek — Ders 14', desc:'Mülakat hazırlığı için ders anlatımı', ytId:'VZH3ThOBj6k'},
+  {type:'embed', emoji:'❓', title:'BİLSEM Nedir?', desc:'Süreç ve merak edilenler hakkında genel bilgi', ytId:'k8dIe68Ok6Y'},
+  {type:'embed', emoji:'🧠', title:'Zeka Soruları — Görsel, Matematik, Mantık', desc:'Genel zeka becerilerini test eden eğlenceli sorular', ytId:'-wbRZyfoBi8'},
+  {type:'embed', emoji:'🧩', title:'Mantık Soruları — İlkokul Seviyesi', desc:'Kısa ve kolay mantık sorularıyla pratik yap', ytId:'bh4adUyKmVM'},
+  {type:'embed', emoji:'📱', title:'Zeka Geliştiren Ücretsiz Mobil Oyunlar', desc:'Evde ek pratik için oyun önerileri', ytId:'8LN3aSX0ue8'},
+  {type:'playlist', emoji:'🔢', title:'Sayı Dizileri — Video Serisi', desc:'Birden çok dersten oluşan oynatma listesi', ytId:'PLV6fGT2E0H12htpcYp_eb3qRr7g63qFEh'}
+];
+// Doğrulanmış tek tek video bulamadığım konular için: her biri YouTube'da o konudaki
+// TÜM ilgili videoları açan arama kısayolları (uydurma video ID'si eklemek yerine dürüst yol)
+const VIDEO_SEARCHES = [
+  {emoji:'🃏', title:'Hafıza Oyunları — Video Arama', desc:'Çocuklar için hafıza kartı ve eşleştirme oyunu videoları', q:'çocuklar için hafıza oyunu nasıl oynanır'},
+  {emoji:'🔍', title:'Dikkat Oyunları — Video Arama', desc:'Dikkat ve odaklanma geliştiren video içerikleri', q:'çocuklar için dikkat geliştirme oyunu'},
+  {emoji:'🧭', title:'Uzamsal Algı — Video Arama', desc:'Yön, dönüş ve şekil algısı videoları', q:'çocuklar için uzamsal algı oyunu'},
+  {emoji:'📖', title:'Olay Sıralama — Video Arama', desc:'Hikâye ve olay sıralama etkinlik videoları', q:'çocuklar için olay sıralama etkinliği'},
+  {emoji:'🔐', title:'Şifre Çözme — Video Arama', desc:'Kod ve şifre çözme oyunu videoları', q:'çocuklar için şifre çözme oyunu'},
+  {emoji:'🔢', title:'Matematik Mantığı — Video Arama', desc:'Sayısal akıl yürütme videoları', q:'ilkokul matematik mantık soruları'}
 ];
 function renderVideoList(){
   const list = document.getElementById('video-list');
   list.innerHTML = '';
+  const heading1 = document.createElement('div');
+  heading1.className = 'video-group-heading';
+  heading1.textContent = '▶ İzle';
+  list.appendChild(heading1);
   VIDEO_TOPICS.forEach(v => {
     const item = document.createElement('div');
     item.className = 'video-item';
-    item.innerHTML = `<div class="vi-emoji">${v.emoji}</div><div class="vi-info"><div class="vi-title">${v.title}</div><div class="vi-desc">${v.desc}</div></div>`;
+    item.innerHTML = `<div class="vi-emoji">${v.emoji}</div><div class="vi-info"><div class="vi-title">${v.title}${v.type==='playlist' ? ' (liste)' : ''}</div><div class="vi-desc">${v.desc}</div></div>`;
     item.addEventListener('click', () => playVideo(v));
+    list.appendChild(item);
+  });
+  const heading2 = document.createElement('div');
+  heading2.className = 'video-group-heading';
+  heading2.textContent = '🔎 YouTube\'da Ara (yeni sekmede açılır)';
+  list.appendChild(heading2);
+  VIDEO_SEARCHES.forEach(v => {
+    const item = document.createElement('div');
+    item.className = 'video-item';
+    item.innerHTML = `<div class="vi-emoji">${v.emoji}</div><div class="vi-info"><div class="vi-title">${v.title}</div><div class="vi-desc">${v.desc}</div></div>`;
+    item.addEventListener('click', () => {
+      window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(v.q), '_blank');
+    });
     list.appendChild(item);
   });
 }
 function playVideo(v){
   document.getElementById('video-list').style.display = 'none';
   document.getElementById('video-player-wrap').style.display = 'block';
-  document.getElementById('video-embed').innerHTML = `<iframe src="https://www.youtube.com/embed/${v.ytId}" title="${v.title}" allowfullscreen></iframe>`;
+  const src = v.type === 'playlist'
+    ? `https://www.youtube.com/embed/videoseries?list=${v.ytId}`
+    : `https://www.youtube.com/embed/${v.ytId}`;
+  document.getElementById('video-embed').innerHTML = `<iframe src="${src}" title="${v.title}" allowfullscreen></iframe>`;
 }
 document.getElementById('btn-videos').addEventListener('click', () => {
   renderVideoList();
