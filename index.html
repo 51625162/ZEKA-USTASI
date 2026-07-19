@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeka Ustası — Dedektif Akademisi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="floaty" style="top:8%;left:6%;">🔍</div>
+<div class="floaty" style="top:70%;left:88%;animation-delay:2s;">🧩</div>
+<div class="floaty" style="top:40%;left:92%;animation-delay:4s;">💡</div>
+<div class="floaty" style="top:85%;left:10%;animation-delay:1s;">🔑</div>
+
+<!-- LOGIN -->
+<section id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="badge-emblem">🕵️</div>
+    <h1>Zeka Ustası</h1>
+    <p class="sub">Dedektif Akademisi'ne Hoş Geldin!</p>
+    <form id="login-form" autocomplete="off">
+      <div class="field">
+        <label for="input-user">Ajan Adı</label>
+        <input id="input-user" type="text" placeholder="Ajan adını yaz" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="input-pass">Gizli Kod</label>
+        <input id="input-pass" type="password" placeholder="•••••" autocomplete="off">
+      </div>
+      <button type="submit" class="login-btn">🕵️ Ajanlığa Başla</button>
+      <div id="login-error" class="login-error"></div>
+    </form>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="screen-dashboard" class="screen">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="logo">🔎 Zeka <b>Ustası</b></div>
+      <button class="icon-btn" id="btn-sound">🔊 Ses Açık</button>
+      <button class="icon-btn" id="btn-voice">🎙️ Anlatıcı Sesi</button>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-avatar">🕵️</div>
+      <div class="agent-info">
+        <div class="name">Ajan TALHA</div>
+        <div class="level" id="agent-level">Çaylak Dedektif</div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="level-progress" style="width:0%"></div></div>
+      </div>
+      <div class="agent-points">
+        <div class="num" id="agent-points">0</div>
+        <div class="lbl">TOPLAM PUAN</div>
+      </div>
+    </div>
+
+    <div class="badges-row" id="badges-row"></div>
+
+    <div class="section-title">📁 Açık Vakalar — Bir görev seç, ipuçlarını topla!</div>
+    <div class="case-grid" id="case-grid"></div>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="screen-game" class="screen">
+  <div class="game-header">
+    <button class="back-link" id="btn-back">← Karargâha Dön</button>
+    <div class="gtitle" id="g-title"></div>
+    <div class="gmeta" id="g-meta"></div>
+  </div>
+  <div class="game-stage" id="game-stage"></div>
+</section>
+
+<!-- RESULT -->
+<section id="screen-result" class="screen">
+  <div class="result-card">
+    <div class="result-badge" id="result-emoji">🥇</div>
+    <div class="result-title" id="result-title">Vaka Çözüldü!</div>
+    <div id="result-sub" style="font-weight:700;color:#8a7f5c;font-size:0.9rem;"></div>
+    <div class="result-stats">
+      <div><span id="res-correct">0/0</span><small>DOĞRU</small></div>
+      <div><span id="res-points">0</span><small>KAZANILAN PUAN</small></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-secondary" id="btn-replay">🔁 Tekrar Oyna</button>
+      <button class="btn-primary" id="btn-home">🏠 Karargâha Dön</button>
+    </div>
+  </div>
+</section>
+
+<!-- VOICE PICKER MODAL -->
+<div class="modal-overlay" id="voice-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>🎙️ Anlatıcı Sesini Seç</h3>
+      <button class="modal-close" id="voice-modal-close">✕</button>
+    </div>
+    <p class="modal-hint">Çözümler bu sesle sana okunacak. Önce dinle, sonra seç!</p>
+    <div class="voice-grid" id="voice-grid"></div>
+  </div>
+</div>
+
+<!-- SOLUTION MODAL -->
+<div class="modal-overlay" id="solution-modal">
+  <div class="modal-box solution-box">
+    <div class="modal-head">
+      <h3>🔦 Çözüm Zamanı</h3>
+      <button class="modal-close" id="solution-modal-close">✕</button>
+    </div>
+    <div class="solution-steps" id="solution-steps"></div>
+    <div class="solution-controls">
+      <button class="pill-btn" id="sol-replay">🔊 Baştan Dinle</button>
+      <button class="pill-btn" id="sol-pause">⏸ Duraklat</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
