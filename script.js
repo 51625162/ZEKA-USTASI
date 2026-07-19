@@ -64,28 +64,35 @@ function cancelSpeech(){
 }
 
 /* ================= STATE & STORAGE ================= */
-const STORE_KEY = 'bilgizekasi_TALHA_progress_v2';
-let state = { points:0, badges:{}, best:{}, voiceProfile:'ajan-ela' };
+const STORE_KEY = 'bilgizekasi_TALHA_progress_v3';
+let state = { points:0, badges:{}, best:{}, voiceProfile:'ajan-ela', dragons:[] };
 function loadProgress(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
     if(raw) state = Object.assign(state, JSON.parse(raw));
   }catch(e){}
+  if(!state.dragons) state.dragons = [];
+  if(state.dragons.length === 0){
+    state.dragons.push('lumi');
+    saveProgress();
+  }
 }
 function saveProgress(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
 }
 
-const LEVELS = [
+const LEVEL_STEP = 40; // her 40 puanda 1 seviye
+const RANK_NAMES = [
   {min:0, name:'Çaylak Dedektif'},
   {min:150, name:'Kaşif Dedektif'},
   {min:400, name:'Usta Dedektif'},
   {min:800, name:'Baş Dedektif'}
 ];
+function levelForPoints(points){ return Math.floor(points / LEVEL_STEP) + 1; }
 function getLevel(points){
-  let lvl = LEVELS[0], next = LEVELS[1];
-  for(let i=0;i<LEVELS.length;i++){
-    if(points >= LEVELS[i].min){ lvl = LEVELS[i]; next = LEVELS[i+1] || null; }
+  let lvl = RANK_NAMES[0], next = RANK_NAMES[1];
+  for(let i=0;i<RANK_NAMES.length;i++){
+    if(points >= RANK_NAMES[i].min){ lvl = RANK_NAMES[i]; next = RANK_NAMES[i+1] || null; }
   }
   return {lvl, next};
 }
@@ -104,6 +111,53 @@ const EMOJI_NAMES = {
   '🍇':'üzüm','🍒':'kiraz','🐰':'tavşan','🐇':'başka bir tavşan','🔺':'yukarı üçgen','🔻':'aşağı üçgen','⬆️':'yukarı ok','⬇️':'aşağı ok'
 };
 function nameOf(e){ return EMOJI_NAMES[e] || e; }
+
+/* ================= DRAGON COLLECTION ================= */
+const DRAGONS = [
+  {id:'lumi',      name:'Lumi',        cat:'mantik',   rarity:'bronze',  emoji:'🐲', ability:'Sayı ve şekil dizilerindeki kalıpları anında görür.', trait:'Meraklı, sabırlı ve her zaman ilk yardıma koşan bir ejder.'},
+  {id:'zeko',      name:'Zeko',        cat:'mantik',   rarity:'silver',  emoji:'🐉', ability:'Karmaşık dizilerde bir sonraki adımı tahmin eder.', trait:'Hızlı düşünür, bulmacalardan asla kaçmaz.'},
+  {id:'akilhan',   name:'Akılhan',     cat:'mantik',   rarity:'gold',    emoji:'🐲', ability:'En zor mantık sorularını bile saniyeler içinde çözer.', trait:'Sakin ve güvenilir, takımın akıl hocası.'},
+  {id:'bilgeata',  name:'Bilgeata',    cat:'mantik',   rarity:'diamond', emoji:'🐉', ability:'Tüm mantık dünyasının efsanevi ustası.', trait:'Bilge, sözleri az ama her sözü değerli.'},
+
+  {id:'gizem',     name:'Gizem',       cat:'sifre',    rarity:'bronze',  emoji:'🦎', ability:'Basit şifreleri gözünü kırpmadan çözer.', trait:'Gizemli ve sessiz, sürprizleri sever.'},
+  {id:'kodra',     name:'Kodra',       cat:'sifre',    rarity:'silver',  emoji:'🐍', ability:'Sembol ve harf kalıplarını hızla eşleştirir.', trait:'Meraklı bir kâşif, her kodun peşine düşer.'},
+  {id:'sirran',    name:'Sirran',      cat:'sifre',    rarity:'gold',    emoji:'🐲', ability:'En karışık şifreleri bile tek bakışta çözer.', trait:'Kurnaz ama dürüst, dostlarına sadık.'},
+  {id:'mechul',    name:'Meçhul',      cat:'sifre',    rarity:'diamond', emoji:'🐉', ability:'Hiçbir kod ona karşı gizli kalamaz.', trait:'Efsanevi şifre ustası, izini kimse süremez.'},
+
+  {id:'anika',     name:'Anıka',       cat:'hafiza',   rarity:'bronze',  emoji:'🦕', ability:'Gördüğü kartları kolayca hatırlar.', trait:'Neşeli ve unutkan dostlarına yardımcı olmayı sever.'},
+  {id:'hatirla',   name:'Hatırla',     cat:'hafiza',   rarity:'silver',  emoji:'🦖', ability:'Uzun kart dizilerini bile aklında tutar.', trait:'Sabırlı, tekrar etmekten yorulmaz.'},
+  {id:'zihara',    name:'Zihara',      cat:'hafiza',   rarity:'gold',    emoji:'🐉', ability:'Bir kez gördüğünü asla unutmaz.', trait:'Keskin zekalı, hafıza şampiyonu.'},
+  {id:'bellekhan', name:'Bellekhan',   cat:'hafiza',   rarity:'diamond', emoji:'🐲', ability:'Tüm hafıza oyunlarının efsanevi rekortmeni.', trait:'Görkemli ve unutulmaz, tıpkı hafızası gibi.'},
+
+  {id:'pusula',    name:'Pusula',      cat:'yon',      rarity:'bronze',  emoji:'🐦‍🔥', ability:'Yönleri ve dönüşleri kolayca takip eder.', trait:'Maceracı, hep yeni rotalar keşfeder.'},
+  {id:'yonata',    name:'Yönata',      cat:'yon',      rarity:'silver',  emoji:'🐉', ability:'Karmaşık dönüş kalıplarını çözer.', trait:'Cesur ve yönünü hiç şaşırmaz.'},
+  {id:'rotam',     name:'Rotam',       cat:'yon',      rarity:'gold',    emoji:'🐲', ability:'Uzaydaki her dönüşü önceden hisseder.', trait:'Lider ruhlu, takımına yol gösterir.'},
+  {id:'gokyon',    name:'Gökyön',      cat:'yon',      rarity:'diamond', emoji:'🐉', ability:'Gökyüzünün en usta yön ustası.', trait:'Efsanevi, rüzgarla birlikte süzülür.'},
+
+  {id:'siravi',    name:'Sıravi',      cat:'siralama', rarity:'bronze',  emoji:'🦎', ability:'Olayların doğru sırasını kolayca bulur.', trait:'Düzenli ve titiz, her şeyi sırayla sever.'},
+  {id:'zamano',    name:'Zamano',      cat:'siralama', rarity:'silver',  emoji:'🐍', ability:'Zaman içindeki olayları akıllıca sıralar.', trait:'Sakin, acele etmez ama hep doğru zamanlar.'},
+  {id:'ardil',     name:'Ardıl',       cat:'siralama', rarity:'gold',    emoji:'🐉', ability:'En karmaşık hikâyeleri bile doğru sıraya dizer.', trait:'Hikâye anlatmayı çok sever.'},
+  {id:'kronos',    name:'Kronoş',      cat:'siralama', rarity:'diamond', emoji:'🐲', ability:'Zamanın efsanevi bekçisi, hiçbir sıra ona karışmaz.', trait:'Görkemli ve bilge, çağların tanığı.'},
+
+  {id:'gozcuk',    name:'Gözcük',      cat:'dikkat',   rarity:'bronze',  emoji:'🦖', ability:'Farklı olanı hemen fark eder.', trait:'Meraklı gözlerle her şeyi inceler.'},
+  {id:'simsek',    name:'Şimşek',      cat:'dikkat',   rarity:'silver',  emoji:'🐉', ability:'Göz kırpmadan en küçük farkı yakalar.', trait:'Hızlı ve enerjik, asla durmaz.'},
+  {id:'farkina',   name:'Farkına',     cat:'dikkat',   rarity:'gold',    emoji:'🐲', ability:'Kamuflajı bozan keskin bir göze sahip.', trait:'Dikkatli ve sakin, hiçbir şeyi kaçırmaz.'},
+  {id:'argus',     name:'Argus',       cat:'dikkat',   rarity:'diamond', emoji:'🐉', ability:'Bin gözle bakar, hiçbir detay ona saklı kalmaz.', trait:'Efsanevi gözcü, koleksiyonun en keskin bakışlısı.'}
+];
+const RARITY_LABEL = {bronze:'Bronz', silver:'Gümüş', gold:'Altın', diamond:'Elmas'};
+const CAT_LABEL = {mantik:'🧩 Mantık', sifre:'🔐 Şifre', hafiza:'🃏 Hafıza', yon:'🧭 Uzamsal', siralama:'📖 Sıralama', dikkat:'🔍 Dikkat'};
+
+function nextLockedDragon(){
+  return DRAGONS.find(d => !state.dragons.includes(d.id));
+}
+function unlockDragonsForLevelUp(levelsGained){
+  const newlyUnlocked = [];
+  for(let i=0;i<levelsGained;i++){
+    const next = nextLockedDragon();
+    if(next){ state.dragons.push(next.id); newlyUnlocked.push(next); }
+  }
+  return newlyUnlocked;
+}
 
 /* ================= GAME DEFINITIONS ================= */
 const GAMES = [
@@ -413,6 +467,132 @@ document.getElementById('voice-modal').addEventListener('click', (e) => {
   if(e.target.id === 'voice-modal') document.getElementById('voice-modal').classList.remove('active');
 });
 
+/* ================= VIDEO ANLATIM MODAL ================= */
+const VIDEO_TOPICS = [
+  {emoji:'🧠', title:'Zeka Soruları — Görsel, Matematik, Mantık', desc:'Genel zeka becerilerini test eden eğlenceli sorular', ytId:'-wbRZyfoBi8'},
+  {emoji:'🧩', title:'Mantık Soruları — İlkokul Seviyesi', desc:'Kısa ve kolay mantık sorularıyla pratik yap', ytId:'bh4adUyKmVM'}
+];
+function renderVideoList(){
+  const list = document.getElementById('video-list');
+  list.innerHTML = '';
+  VIDEO_TOPICS.forEach(v => {
+    const item = document.createElement('div');
+    item.className = 'video-item';
+    item.innerHTML = `<div class="vi-emoji">${v.emoji}</div><div class="vi-info"><div class="vi-title">${v.title}</div><div class="vi-desc">${v.desc}</div></div>`;
+    item.addEventListener('click', () => playVideo(v));
+    list.appendChild(item);
+  });
+}
+function playVideo(v){
+  document.getElementById('video-list').style.display = 'none';
+  document.getElementById('video-player-wrap').style.display = 'block';
+  document.getElementById('video-embed').innerHTML = `<iframe src="https://www.youtube.com/embed/${v.ytId}" title="${v.title}" allowfullscreen></iframe>`;
+}
+document.getElementById('btn-videos').addEventListener('click', () => {
+  renderVideoList();
+  document.getElementById('video-list').style.display = 'flex';
+  document.getElementById('video-player-wrap').style.display = 'none';
+  document.getElementById('video-embed').innerHTML = '';
+  document.getElementById('video-modal').classList.add('active');
+});
+document.getElementById('video-back').addEventListener('click', () => {
+  document.getElementById('video-embed').innerHTML = '';
+  document.getElementById('video-list').style.display = 'flex';
+  document.getElementById('video-player-wrap').style.display = 'none';
+});
+document.getElementById('video-modal-close').addEventListener('click', () => {
+  document.getElementById('video-embed').innerHTML = '';
+  document.getElementById('video-modal').classList.remove('active');
+});
+document.getElementById('video-modal').addEventListener('click', (e) => {
+  if(e.target.id === 'video-modal'){
+    document.getElementById('video-embed').innerHTML = '';
+    document.getElementById('video-modal').classList.remove('active');
+  }
+});
+
+/* ================= DRAGON DETAIL MODAL (hareketli gösterim) ================= */
+function openDragonModal(dragon){
+  document.getElementById('dragon-modal-title').textContent = `${dragon.emoji} ${dragon.name}`;
+  document.getElementById('dragon-display').textContent = dragon.emoji;
+  const info = document.getElementById('dragon-info');
+  info.innerHTML = `
+    <div class="d-row">${CAT_LABEL[dragon.cat]} • ${RARITY_LABEL[dragon.rarity]} rütbe</div>
+    <div class="d-row"><b>Yetenek:</b> ${dragon.ability}</div>
+    <div class="d-row"><b>Özellik:</b> ${dragon.trait}</div>
+  `;
+  document.getElementById('dragon-modal').classList.add('active');
+  cancelSpeech();
+  speakOne(`${dragon.name}. Yeteneği: ${dragon.ability} Özelliği: ${dragon.trait}`, state.voiceProfile);
+}
+document.getElementById('dragon-modal-close').addEventListener('click', () => {
+  cancelSpeech();
+  document.getElementById('dragon-modal').classList.remove('active');
+});
+document.getElementById('dragon-modal').addEventListener('click', (e) => {
+  if(e.target.id === 'dragon-modal'){
+    cancelSpeech();
+    document.getElementById('dragon-modal').classList.remove('active');
+  }
+});
+
+/* ================= DRAGON GIFT MODAL (seviye atlama hediyesi) ================= */
+let giftQueue = [];
+function queueDragonGifts(dragons){
+  giftQueue = giftQueue.concat(dragons);
+  if(giftQueue.length === dragons.length) showNextGift();
+}
+function showNextGift(){
+  if(giftQueue.length === 0) return;
+  const dragon = giftQueue[0];
+  document.getElementById('gift-display').textContent = dragon.emoji;
+  document.getElementById('gift-info').innerHTML = `
+    <div class="d-row" style="text-align:center;font-family:var(--font-display);font-size:1.1rem;">${dragon.name}</div>
+    <div class="d-row">${CAT_LABEL[dragon.cat]} • ${RARITY_LABEL[dragon.rarity]} rütbe</div>
+    <div class="d-row"><b>Yetenek:</b> ${dragon.ability}</div>
+  `;
+  document.getElementById('gift-modal').classList.add('active');
+  cancelSpeech();
+  soundWin();
+  speakOne(`Tebrikler! ${dragon.name} adlı ejderi kazandın! Yeteneği: ${dragon.ability}`, state.voiceProfile);
+}
+document.getElementById('gift-continue').addEventListener('click', () => {
+  cancelSpeech();
+  giftQueue.shift();
+  document.getElementById('gift-modal').classList.remove('active');
+  if(giftQueue.length > 0) setTimeout(showNextGift, 300);
+  else renderDashboard();
+});
+
+/* ================= DASHBOARD RENDER ================= */
+const BADGE_ICON = { gold:'🥇', silver:'🥈', bronze:'🥉' };
+const BADGE_RANK = { none:0, bronze:1, silver:2, gold:3 };
+
+function renderDragonGrid(){
+  const grid = document.getElementById('dragon-grid');
+  grid.innerHTML = '';
+  const unlockedCount = state.dragons.length;
+  document.getElementById('dragon-section-title').textContent = `🐉 Ejder Koleksiyonu (${unlockedCount}/${DRAGONS.length}) — Seviye atladıkça yeni ejder kazanırsın!`;
+  const nextDragon = nextLockedDragon();
+  DRAGONS.forEach(d => {
+    const unlocked = state.dragons.includes(d.id);
+    const slot = document.createElement('div');
+    if(unlocked){
+      slot.className = 'dragon-slot rarity-' + d.rarity;
+      slot.innerHTML = `<span class="d-emoji">${d.emoji}</span><div class="d-name">${d.name}</div>`;
+      slot.addEventListener('click', () => openDragonModal(d));
+    } else if(d.id === nextDragon?.id){
+      const hintWord = d.ability.split(' ').slice(0,3).join(' ');
+      slot.className = 'dragon-slot locked next-hint';
+      slot.innerHTML = `<span class="d-emoji">❔</span><div class="d-name">Sırada</div><div class="d-hint">${CAT_LABEL[d.cat]}<br>${hintWord}...</div>`;
+    } else {
+      slot.className = 'dragon-slot locked';
+      slot.innerHTML = `<span class="d-emoji">🔒</span><div class="d-name">???</div>`;
+    }
+    grid.appendChild(slot);
+  });
+}
+
 /* ================= SOLUTION MODAL (sesli + görsel anlatım) ================= */
 let solutionPaused = false;
 function openSolutionModal(steps){
@@ -480,10 +660,6 @@ document.getElementById('sol-pause').addEventListener('click', function(){
   }
 });
 
-/* ================= DASHBOARD RENDER ================= */
-const BADGE_ICON = { gold:'🥇', silver:'🥈', bronze:'🥉' };
-const BADGE_RANK = { none:0, bronze:1, silver:2, gold:3 };
-
 function renderDashboard(){
   const { lvl, next } = getLevel(state.points);
   document.getElementById('agent-level').textContent = lvl.name;
@@ -493,6 +669,8 @@ function renderDashboard(){
 
   const vp = VOICE_PROFILES.find(p => p.id === state.voiceProfile) || VOICE_PROFILES[0];
   document.getElementById('btn-voice').textContent = '🎙️ ' + vp.name;
+
+  renderDragonGrid();
 
   const badgesRow = document.getElementById('badges-row');
   badgesRow.innerHTML = '';
@@ -825,7 +1003,12 @@ function finishGame(correct, total, points, moves){
   if(tier && BADGE_RANK[tier] > currentRank){
     state.badges[runtime.gameId] = tier;
   }
+  const levelBefore = levelForPoints(state.points);
   state.points += points;
+  const levelAfter = levelForPoints(state.points);
+  const levelsGained = Math.max(0, levelAfter - levelBefore);
+  const newDragons = levelsGained > 0 ? unlockDragonsForLevelUp(levelsGained) : [];
+
   const label = moves ? `${correct} eşleşme • ${moves} hamlede` : `${correct}/${total} doğru`;
   const prevBest = state.best[runtime.gameId];
   if(!prevBest || points > (parseInt(prevBest) || 0)){
@@ -840,6 +1023,11 @@ function finishGame(correct, total, points, moves){
   document.getElementById('res-points').textContent = points;
   showScreen('screen-result');
   if(tier === 'gold') soundWin(); else if(tier) soundGood();
+
+  if(newDragons.length > 0){
+    giftQueue = [];
+    setTimeout(() => queueDragonGifts(newDragons), 700);
+  }
 }
 
 /* ================= INIT ================= */

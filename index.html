@@ -43,6 +43,7 @@
       <div class="logo">🔎 Zeka <b>Ustası</b></div>
       <button class="icon-btn" id="btn-sound">🔊 Ses Açık</button>
       <button class="icon-btn" id="btn-voice">🎙️ Anlatıcı Sesi</button>
+      <button class="icon-btn" id="btn-videos">🎥 Video Anlatım</button>
     </div>
 
     <div class="agent-card">
@@ -60,6 +61,9 @@
 
     <div class="badges-row" id="badges-row"></div>
 
+    <div class="section-title" id="dragon-section-title">🐉 Ejder Koleksiyonu — Seviye atladıkça yeni ejder kazanırsın!</div>
+    <div class="dragon-grid" id="dragon-grid"></div>
+
     <div class="section-title">📁 Açık Vakalar — Bir görev seç, ipuçlarını topla!</div>
     <div class="case-grid" id="case-grid"></div>
   </div>
@@ -68,7 +72,7 @@
 <!-- GAME -->
 <section id="screen-game" class="screen">
   <div class="game-header">
-    <button class="back-link" id="btn-back">← Karargâha Dön</button>
+    <button class="back-link" id="btn-back"><span class="back-badge">🏠</span> Karargâha Dön</button>
     <div class="gtitle" id="g-title"></div>
     <div class="gmeta" id="g-meta"></div>
   </div>
@@ -87,7 +91,7 @@
     </div>
     <div class="result-actions">
       <button class="btn-secondary" id="btn-replay">🔁 Tekrar Oyna</button>
-      <button class="btn-primary" id="btn-home">🏠 Karargâha Dön</button>
+      <button class="btn-primary" id="btn-home"><span class="back-badge">🏠</span> Karargâha Dön</button>
     </div>
   </div>
 </section>
@@ -116,6 +120,44 @@
       <button class="pill-btn" id="sol-replay">🔊 Baştan Dinle</button>
       <button class="pill-btn" id="sol-pause">⏸ Duraklat</button>
     </div>
+  </div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div class="modal-overlay" id="video-modal">
+  <div class="modal-box video-box">
+    <div class="modal-head">
+      <h3>🎥 Videolu Anlatım</h3>
+      <button class="modal-close" id="video-modal-close">✕</button>
+    </div>
+    <p class="modal-hint">İnternet bağlantısı gerekir. Bir konu seç, izleyerek öğren!</p>
+    <div class="video-list" id="video-list"></div>
+    <div class="video-player-wrap" id="video-player-wrap" style="display:none;">
+      <button class="pill-btn" id="video-back">← Konulara Dön</button>
+      <div class="video-embed" id="video-embed"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAGON DETAIL MODAL -->
+<div class="modal-overlay" id="dragon-modal">
+  <div class="modal-box dragon-box">
+    <div class="modal-head">
+      <h3 id="dragon-modal-title">Ejder</h3>
+      <button class="modal-close" id="dragon-modal-close">✕</button>
+    </div>
+    <div class="dragon-display" id="dragon-display"></div>
+    <div class="dragon-info" id="dragon-info"></div>
+  </div>
+</div>
+
+<!-- DRAGON GIFT MODAL -->
+<div class="modal-overlay" id="gift-modal">
+  <div class="modal-box gift-box">
+    <div class="gift-title">🎁 Seviye Atladın! Yeni Ejder Kazandın!</div>
+    <div class="dragon-display gift-display" id="gift-display"></div>
+    <div class="dragon-info" id="gift-info"></div>
+    <button class="pill-btn gift-continue" id="gift-continue">Harika! ✨</button>
   </div>
 </div>
 

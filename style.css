@@ -217,6 +217,76 @@ button:focus-visible, input:focus-visible, div[tabindex]:focus-visible{outline:3
 .btn-primary{background:var(--red);color:#fff;}
 .btn-secondary{background:#eee2c3;color:var(--text-dark);}
 
+/* ---------- BACK BADGE ---------- */
+.back-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:50%;background:var(--gold);
+  font-size:0.9rem;box-shadow:0 0 0 3px rgba(255,197,61,0.18);
+  vertical-align:middle;margin-right:4px;
+}
+.back-link{display:inline-flex;align-items:center;gap:2px;}
+#btn-home{display:inline-flex;align-items:center;gap:8px;justify-content:center;}
+
+/* ---------- DRAGON COLLECTION ---------- */
+.dragon-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;
+  margin-bottom:26px;
+}
+.dragon-slot{
+  background:var(--panel);border-radius:14px;padding:10px 6px;text-align:center;
+  cursor:pointer;transition:transform 0.15s;border:2px solid transparent;
+}
+.dragon-slot:hover{transform:translateY(-3px);}
+.dragon-slot .d-emoji{font-size:1.9rem;display:block;}
+.dragon-slot .d-name{font-size:0.68rem;font-weight:800;margin-top:4px;color:var(--text);}
+.dragon-slot.rarity-bronze{border-color:#b5763e;}
+.dragon-slot.rarity-silver{border-color:#c3c3d1;}
+.dragon-slot.rarity-gold{border-color:var(--gold);}
+.dragon-slot.rarity-diamond{border-color:#8fe3ff;box-shadow:0 0 14px rgba(143,227,255,0.35);}
+.dragon-slot.locked{background:#1a1a45;opacity:0.55;cursor:default;}
+.dragon-slot.locked .d-emoji{filter:grayscale(1) brightness(0.5);}
+.dragon-slot.locked .d-name{color:var(--text-dim);}
+.dragon-slot.locked.next-hint{opacity:0.85;border-color:rgba(255,197,61,0.4);border-style:dashed;}
+.dragon-slot.locked.next-hint .d-emoji{filter:grayscale(0.4) brightness(0.7);}
+.dragon-slot .d-hint{font-size:0.6rem;color:var(--gold);font-weight:700;margin-top:2px;line-height:1.2;}
+
+@keyframes dragonFloat{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-14px) rotate(2deg);}}
+@keyframes dragonGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(255,197,61,0.4));}50%{filter:drop-shadow(0 0 22px rgba(255,197,61,0.85));}}
+@keyframes sparklePop{0%{opacity:0;transform:scale(0.4) translateY(10px);}100%{opacity:1;transform:scale(1) translateY(0);}}
+.dragon-display{
+  font-size:5rem;text-align:center;padding:18px 0 8px;
+  animation:dragonFloat 3s ease-in-out infinite, dragonGlow 2.4s ease-in-out infinite;
+}
+.dragon-info{display:flex;flex-direction:column;gap:10px;}
+.dragon-info .d-row{
+  background:#fffef9;border-left:4px solid var(--gold-dark);border-radius:8px;padding:10px 14px;
+  font-size:0.92rem;font-weight:600;opacity:0;animation:sparklePop 0.5s forwards;
+}
+.dragon-info .d-row:nth-child(1){animation-delay:0.1s;}
+.dragon-info .d-row:nth-child(2){animation-delay:0.35s;}
+.dragon-info .d-row:nth-child(3){animation-delay:0.6s;}
+.dragon-info .d-row b{color:var(--gold-dark);}
+.dragon-box{max-width:440px;}
+
+.gift-box{max-width:420px;text-align:center;}
+.gift-title{font-family:var(--font-display);font-size:1.15rem;margin-bottom:6px;color:var(--text-dark);}
+.gift-display{font-size:6rem;}
+.gift-continue{margin-top:16px;background:var(--red);color:#fff;padding:12px 24px;}
+
+/* ---------- VIDEO MODAL ---------- */
+.video-box{max-width:480px;}
+.video-list{display:flex;flex-direction:column;gap:10px;}
+.video-item{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+  border:2px solid var(--paper-line);background:#fffef9;cursor:pointer;
+}
+.video-item:hover{background:#fff3d6;}
+.video-item .vi-emoji{font-size:1.6rem;}
+.video-item .vi-info .vi-title{font-weight:800;font-family:var(--font-display);font-size:0.95rem;}
+.video-item .vi-info .vi-desc{font-size:0.78rem;color:#8a7f5c;font-weight:600;}
+.video-embed{position:relative;width:100%;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;margin-top:12px;}
+.video-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
+
 /* ---------- MODALS ---------- */
 .modal-overlay{
   display:none;position:fixed;inset:0;background:rgba(10,10,30,0.72);
